@@ -1,3 +1,15 @@
+/**
+ * This creates new configuration with name "starterSource" that is testing exercises sources agains provided tests.
+ *
+ * If `-PsourcesDir` is provided - this directory will be used as location of Kotlin source files.
+ * Else reference solution sources will be used.
+ *
+ * Examples:
+ *   - `./gradlew test` - will run tests for reference solutions for all exercises.
+ *   - `./gradlew :hello-world:test` - will run tests for the reference solution only for `hello-world` exercise.
+ *   - `./gradlew -PsourcesDir=~/exercism/kotlin/hello-world/src/main/kotlin`.
+ */
+
 subprojects {
   afterEvaluate { Project project ->
 
@@ -14,7 +26,14 @@ subprojects {
       // By replacing the "main" sourceSet with the reference solution we avoid any collisions
       // with solution code that may have been included as a "starter" (e.g. etl).
       main {
-        kotlin.srcDirs = [".meta/src/reference/kotlin"]
+        String sourcesDir
+        try {
+          sourcesDir = project.property("sourcesDir")
+        } catch (MissingPropertyException e) {
+          sourcesDir = ".meta/src/reference/kotlin"
+        }
+
+        kotlin.srcDirs = [sourcesDir]
       }
       project["compileKotlin"].doFirst { compileTask ->
         println "  (source = " + compileTask.source.asPath + ")"
